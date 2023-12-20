@@ -10,10 +10,10 @@ async function generateKeys() {
     };
 }
 
-async function signData(data, privateKeyJwk) {
+async function signData(nonce, did, privateKeyJwk) {
     const privateKey = await importJWK(privateKeyJwk, 'EdDSA');
-    return await new SignJWT(data)
-        .setProtectedHeader({ alg: 'EdDSA' })
+    return await new SignJWT({ nonce })
+        .setProtectedHeader({ alg: 'EdDSA', kid: did })
         .sign(privateKey);
 }
 
@@ -30,8 +30,9 @@ async function main() {
         console.log('Public Key:', publicKeyJwk);
         console.log('Private Key:', privateKeyJwk);
 
-        const data = { did };
-        const signedJwt = await signData(data, privateKeyJwk);
+        const nonce = '1234567';
+
+        const signedJwt = await signData(nonce, did, privateKeyJwk);
         console.log('Signed JWT:', signedJwt);
 
         const verificationResult = await verifySignature(signedJwt, publicKeyJwk);
